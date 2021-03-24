@@ -1,0 +1,16 @@
+start_authentication:
+  description: Request authentication code from Hisense TV
+  fields:
+    entity_id:
+      description: Name of the Hisense TV entity.
+      example: "media_player.livingroom_tv"
+
+authenticate_client:
+  description: Authenticate Home Assistant against Hisense TV
+  fields:
+    entity_id:
+      description: Name of the Hisense TV entity.
+      example: "media_player.livingroom_tv"
+    auth_code:
+      description: Authentication code seen on TV screen
+      exampe: 1234

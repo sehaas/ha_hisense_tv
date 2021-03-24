@@ -1,0 +1,16 @@
+{
+    "config": {
+        "flow_title": "Hisense TV",
+        "step": {
+            "user": {
+                "description": "TBD",
+                "data": {
+                    "mac": "[%key:common::config_flow::data::mac%]",
+                    "name": "[%key:common::config_flow::data::name%]",
+                    "mqtt_in": "[%key:common::config_flow::data::mqtt_in%]",
+                    "mqtt_out": "[%key:common::config_flow::data::mqtt_out%]"
+                }
+            }
+        }
+    }
+}

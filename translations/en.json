@@ -1,0 +1,16 @@
+{
+    "config": {
+        "flow_title": "Hisense TV",
+        "step": {
+            "user": {
+                "data": {
+                    "mac": "MAC Address",
+                    "mqtt_in": "MQTT in prefix",
+                    "mqtt_out": "MQTT out prefix",
+                    "name": "Name"
+                },
+                "description": "TBD"
+            }
+        }
+    }
+}

@@ -1,50 +1,45 @@
 import asyncio
+import json
 import logging
+
 import voluptuous as vol
 import wakeonlan
-import json
-
 from homeassistant.components import mqtt
-from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.components.media_player import (
-    MediaPlayerEntity,
-    BrowseMedia,
-    PLATFORM_SCHEMA,
     DEVICE_CLASS_TV,
+    PLATFORM_SCHEMA,
+    BrowseMedia,
+    MediaPlayerEntity,
 )
 from homeassistant.components.media_player.const import (
     MEDIA_CLASS_APP,
-    MEDIA_CLASS_DIRECTORY,
     MEDIA_CLASS_CHANNEL,
+    MEDIA_CLASS_DIRECTORY,
     MEDIA_TYPE_APP,
     MEDIA_TYPE_APPS,
     MEDIA_TYPE_CHANNEL,
     MEDIA_TYPE_TVSHOW,
-    SUPPORT_SELECT_SOURCE,
-    SUPPORT_TURN_ON,
-    SUPPORT_TURN_OFF,
-    SUPPORT_VOLUME_MUTE,
-    SUPPORT_VOLUME_STEP,
-    SUPPORT_VOLUME_SET,
     SUPPORT_BROWSE_MEDIA,
     SUPPORT_PLAY_MEDIA,
-)
-from homeassistant.const import (
-    CONF_NAME,
-    CONF_MAC,
-    STATE_OFF,
-    STATE_ON,
+    SUPPORT_SELECT_SOURCE,
+    SUPPORT_TURN_OFF,
+    SUPPORT_TURN_ON,
+    SUPPORT_VOLUME_MUTE,
+    SUPPORT_VOLUME_SET,
+    SUPPORT_VOLUME_STEP,
 )
 from homeassistant.config_entries import SOURCE_IMPORT
+from homeassistant.const import CONF_MAC, CONF_NAME, STATE_OFF, STATE_ON
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_platform
 
 from .const import (
+    ATTR_CODE,
     CONF_MQTT_IN,
     CONF_MQTT_OUT,
-    DOMAIN,
+    DEFAULT_CLIENT_ID,
     DEFAULT_NAME,
-    SERVICE_AUTHENTICATE,
-    SERVICE_START_AUTHENTICATION,
-    ATTR_CODE,
+    DOMAIN,
 )
 from .helper import mqtt_pub_sub
 
@@ -105,14 +100,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     if uid is None:
         uid = config_entry.entry_id
 
-    platform = entity_platform.current_platform.get()
-    platform.async_register_entity_service(
-        SERVICE_START_AUTHENTICATION, {}, "async_start_authentication"
-    )
-    platform.async_register_entity_service(
-        SERVICE_AUTHENTICATE, AUTHENTICATE_SCHEMA, "async_authenticate"
-    )
-
     entity = HisenseTvEntity(
         hass=hass, name=name, mqtt_in=mqtt_in, mqtt_out=mqtt_out, mac=mac, uid=uid
     )
@@ -123,7 +110,7 @@ class HisenseTvEntity(MediaPlayerEntity):
     def __init__(
         self, hass, name: str, mqtt_in: str, mqtt_out: str, mac: str, uid: str
     ):
-        self._client = "HomeAssistant"
+        self._client = DEFAULT_CLIENT_ID
         self._hass = hass
         self._name = name
         self._mqtt_in = mqtt_in or ""
@@ -664,22 +651,3 @@ class HisenseTvEntity(MediaPlayerEntity):
                 topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/launchapp"),
                 payload=payload,
             )
-
-    async def async_start_authentication(self):
-        _LOGGER.debug("async_start_authentication")
-        mqtt.async_publish(
-            hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/gettvstate"),
-            payload="",
-        )
-
-    async def async_authenticate(self, auth_code):
-        _LOGGER.debug("async_authenticate: %s" % auth_code)
-        payload = json.dumps({"authNum": auth_code})
-        mqtt.async_publish(
-            hass=self._hass,
-            topic=self._out_topic(
-                "/remoteapp/tv/ui_service/%s/actions/authenticationcode"
-            ),
-            payload=payload,
-        )

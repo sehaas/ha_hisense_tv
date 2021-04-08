@@ -35,7 +35,7 @@ class HisenseTvBase(object):
         self._mqtt_out = mqtt_out or ""
         self._mac = mac
         self._unique_id = uid
-        self._icon = "mdi:television-clear"
+        self._icon = "mdi:television-clean"
         self._subscriptions = {
             "tvsleep": lambda: None,
             "state": lambda: None,

@@ -1,6 +1,10 @@
 import asyncio
+import logging
 
 from homeassistant.components import mqtt
+from .const import DEFAULT_CLIENT_ID
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def mqtt_pub_sub(hass, pub, sub, payload=""):
@@ -17,3 +21,39 @@ async def mqtt_pub_sub(hass, pub, sub, payload=""):
     unsubscribe = await mqtt.async_subscribe(hass=hass, topic=sub, msg_callback=put)
     mqtt.async_publish(hass=hass, topic=pub, payload=payload)
     return get(), unsubscribe
+
+
+class HisenseTvBase(object):
+    def __init__(
+        self, hass, name: str, mqtt_in: str, mqtt_out: str, mac: str, uid: str
+    ):
+        self._client = DEFAULT_CLIENT_ID
+        self._hass = hass
+        self._name = name
+        self._mqtt_in = mqtt_in or ""
+        self._mqtt_out = mqtt_out or ""
+        self._mac = mac
+        self._unique_id = uid
+        self._icon = "mdi:television-clear"
+        self._subscriptions = {
+            "tvsleep": lambda: None,
+            "state": lambda: None,
+            "volume": lambda: None,
+            "sourcelist": lambda: None,
+        }
+
+    def _out_topic(self, topic=""):
+        try:
+            out_topic = self._mqtt_out + topic % self._client
+        except:
+            out_topic = self._mqtt_out + topic % self._client
+        _LOGGER.debug("_out_topic: %s" % out_topic)
+        return out_topic
+
+    def _in_topic(self, topic=""):
+        try:
+            in_topic = self._mqtt_in + topic % self._client
+        except:
+            in_topic = self._mqtt_in + topic
+        _LOGGER.debug("_in_topic: %s" % in_topic)
+        return in_topic

@@ -41,7 +41,7 @@ from .const import (
     DEFAULT_NAME,
     DOMAIN,
 )
-from .helper import mqtt_pub_sub
+from .helper import HisenseTvBase, mqtt_pub_sub
 
 REQUIREMENTS = []
 
@@ -106,19 +106,20 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities([entity])
 
 
-class HisenseTvEntity(MediaPlayerEntity):
+class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
     def __init__(
         self, hass, name: str, mqtt_in: str, mqtt_out: str, mac: str, uid: str
     ):
-        self._client = DEFAULT_CLIENT_ID
-        self._hass = hass
-        self._name = name
-        self._mqtt_in = mqtt_in or ""
-        self._mqtt_out = mqtt_out or ""
-        self._mac = mac
-        self._unique_id = uid
+        HisenseTvBase.__init__(
+            self=self,
+            hass=hass,
+            name=name,
+            mqtt_in=mqtt_in,
+            mqtt_out=mqtt_out,
+            mac=mac,
+            uid=uid,
+        )
 
-        self._icon = "mdi:television-clear"
         self._muted = False
         self._volume = 0
         self._state = STATE_OFF
@@ -130,12 +131,6 @@ class HisenseTvEntity(MediaPlayerEntity):
         self._channel_num = None
         self._channel_infos = {}
         self._app_list = {}
-        self._subscriptions = {
-            "tvsleep": lambda: None,
-            "state": lambda: None,
-            "volume": lambda: None,
-            "sourcelist": lambda: None,
-        }
 
     @property
     def should_poll(self):
@@ -161,7 +156,7 @@ class HisenseTvEntity(MediaPlayerEntity):
 
     @property
     def icon(self):
-        return "hass:television-clean"
+        return self._icon
 
     @property
     def supported_features(self):
@@ -198,13 +193,13 @@ class HisenseTvEntity(MediaPlayerEntity):
         _LOGGER.debug("state %s" % self._state)
         return self._state
 
-    def turn_on(self):
+    async def async_turn_on(self, **kwargs):
         """Turn the media player on."""
         _LOGGER.debug("turn_on")
         wakeonlan.send_magic_packet(self._mac)
         # self._state = STATE_OFF
 
-    def turn_off(self):
+    async def async_turn_off(self, **kwargs):
         """Turn off media player."""
         _LOGGER.debug("turn_off")
         mqtt.async_publish(
@@ -373,22 +368,6 @@ class HisenseTvEntity(MediaPlayerEntity):
             self._out_topic("/remoteapp/mobile/%s/ui_service/data/sourcelist"),
             self._message_received_sourcelist,
         )
-
-    def _out_topic(self, topic=""):
-        try:
-            out_topic = self._mqtt_out + topic % self._client
-        except:
-            out_topic = self._mqtt_out + topic % self._client
-        _LOGGER.debug("_out_topic: %s" % out_topic)
-        return out_topic
-
-    def _in_topic(self, topic=""):
-        try:
-            in_topic = self._mqtt_in + topic % self._client
-        except:
-            in_topic = self._mqtt_in + topic
-        _LOGGER.debug("_in_topic: %s" % in_topic)
-        return in_topic
 
     async def _message_received_turnoff(self, msg):
         """Run when new MQTT message has been received."""

@@ -1,4 +1,4 @@
 {
     "name":"Hisense TV",
-    "domains": ["media_player"]
+    "domains": ["media_player", "switch"]
 }

@@ -2,9 +2,10 @@ import json
 import logging
 
 import voluptuous as vol
+
 from homeassistant import config_entries
 from homeassistant.components import mqtt
-from homeassistant.const import CONF_AUTHENTICATION, CONF_MAC, CONF_NAME, CONF_PIN
+from homeassistant.const import CONF_MAC, CONF_NAME, CONF_PIN
 
 from .const import (
     CONF_MQTT_IN,

@@ -1,14 +1,13 @@
-import asyncio
-from homeassistant.components.hisense_tv.helper import HisenseTvBase
-import json
 import logging
+
 import wakeonlan
 
 from homeassistant.components import mqtt
-from homeassistant.components.switch import SwitchEntity, DEVICE_CLASS_SWITCH
-from homeassistant.const import CONF_MAC, CONF_NAME, STATE_OFF, STATE_ON
+from homeassistant.components.switch import DEVICE_CLASS_SWITCH, SwitchEntity
+from homeassistant.const import CONF_MAC, CONF_NAME
 
-from .const import DOMAIN, DEFAULT_NAME, CONF_MQTT_IN, CONF_MQTT_OUT
+from .const import CONF_MQTT_IN, CONF_MQTT_OUT, DEFAULT_NAME, DOMAIN
+from .helper import HisenseTvBase
 
 _LOGGER = logging.getLogger(__name__)
 

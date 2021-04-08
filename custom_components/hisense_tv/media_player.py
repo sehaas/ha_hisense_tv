@@ -4,6 +4,7 @@ import logging
 
 import voluptuous as vol
 import wakeonlan
+
 from homeassistant.components import mqtt
 from homeassistant.components.media_player import (
     DEVICE_CLASS_TV,
@@ -31,13 +32,11 @@ from homeassistant.components.media_player.const import (
 from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.const import CONF_MAC, CONF_NAME, STATE_OFF, STATE_ON
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import entity_platform
 
 from .const import (
     ATTR_CODE,
     CONF_MQTT_IN,
     CONF_MQTT_OUT,
-    DEFAULT_CLIENT_ID,
     DEFAULT_NAME,
     DOMAIN,
 )

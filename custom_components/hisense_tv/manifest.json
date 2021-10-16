@@ -1,8 +1,8 @@
 {
     "domain": "hisense_tv",
     "name": "Hisense TV MQTT Bridge",
-    "version": "21.4.8",
-    "documentation": "https://github.com/sehaas/ha_hisense",
+    "version": "21.10.16",
+    "documentation": "https://github.com/sehaas/ha_hisense_tv",
     "dependencies": ["mqtt"],
     "codeowners": [
       "@sehaas"

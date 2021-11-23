@@ -1,12 +1,16 @@
 {
-    "domain": "hisense_tv",
-    "name": "Hisense TV MQTT Bridge",
-    "version": "21.4.8",
-    "documentation": "https://github.com/sehaas/ha_hisense",
-    "dependencies": ["mqtt"],
-    "codeowners": [
-      "@sehaas"
-    ],
-    "requirements": ["wakeonlan==1.1.6"],
-    "config_flow": true
+  "domain": "hisense_tv",
+  "name": "Hisense TV MQTT Bridge",
+  "version": "21.11.23",
+  "documentation": "https://github.com/sehaas/ha_hisense_tv",
+  "dependencies": [
+    "mqtt"
+  ],
+  "codeowners": [
+    "@sehaas"
+  ],
+  "requirements": [
+    "wakeonlan==1.1.6"
+  ],
+  "config_flow": true
 }

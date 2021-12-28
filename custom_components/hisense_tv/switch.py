@@ -48,9 +48,10 @@ class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/remote_service/%s/actions/sendkey"),
+            topic=self._out_topic(
+                "/remoteapp/tv/remote_service/%s/actions/sendkey"),
             payload="KEY_POWER",
             retain=False,
         )
@@ -130,7 +131,8 @@ class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
 
     async def _message_received_state(self, msg):
         if msg.retain == True:
-            _LOGGER.debug("SWITCH message_received_state - skip retained message")
+            _LOGGER.debug(
+                "SWITCH message_received_state - skip retained message")
             return
 
         _LOGGER.debug("SWITCH message_received_state - turn on")

@@ -196,18 +196,17 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         """Turn the media player on."""
         _LOGGER.debug("turn_on")
         wakeonlan.send_magic_packet(self._mac)
-        # self._state = STATE_OFF
 
     async def async_turn_off(self, **kwargs):
         """Turn off media player."""
         _LOGGER.debug("turn_off")
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/remote_service/%s/actions/sendkey"),
+            topic=self._out_topic(
+                "/remoteapp/tv/remote_service/%s/actions/sendkey"),
             payload="KEY_POWER",
             retain=False,
         )
-        # self._state = STATE_OFF
 
     @property
     def is_volume_muted(self):
@@ -221,11 +220,11 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         _LOGGER.debug("volume_level %d" % self._volume)
         return self._volume / 100
 
-    def set_volume_level(self, volume):
+    async def async_set_volume_level(self, volume):
         """Set volume level, range 0..1."""
         _LOGGER.debug("set_volume_level %s" % volume)
         self._volume = int(volume * 100)
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
             topic=self._out_topic(
                 "/remoteapp/tv/platform_service/%s/actions/changevolume"
@@ -233,35 +232,38 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
             payload=self._volume,
         )
 
-    def volume_up(self):
+    async def async_volume_up(self):
         """Volume up the media player."""
         _LOGGER.debug("volume_up")
         if self._volume < 100:
             self._volume = self._volume + 1
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/remote_service/%s/actions/sendkey"),
+            topic=self._out_topic(
+                "/remoteapp/tv/remote_service/%s/actions/sendkey"),
             payload="KEY_VOLUMEUP",
         )
 
-    def volume_down(self):
+    async def async_volume_down(self):
         """Volume down media player."""
         _LOGGER.debug("volume_down")
         if self._volume > 0:
             self._volume = self._volume - 1
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/remote_service/%s/actions/sendkey"),
+            topic=self._out_topic(
+                "/remoteapp/tv/remote_service/%s/actions/sendkey"),
             payload="KEY_VOLUMEDOWN",
         )
 
-    def mute_volume(self, mute):
+    async def async_mute_volume(self, mute):
         """Send mute command."""
         _LOGGER.debug("mute_volume %s" % mute)
         self._muted = mute
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/remote_service/%s/actions/sendkey"),
+            topic=self._out_topic(
+                "/remoteapp/tv/remote_service/%s/actions/sendkey"),
             payload="KEY_MUTE",
         )
 
@@ -304,7 +306,7 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         _LOGGER.debug("async_select_source %s" % source)
 
         if source == "App":
-            mqtt.async_publish(
+            await mqtt.async_publish(
                 hass=self._hass,
                 topic=self._out_topic(
                     "/remoteapp/tv/remote_service/%s/actions/sendkey"
@@ -315,22 +317,24 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
 
         source_dic = self._source_list.get(source)
         payload = json.dumps({"sourceid": source_dic.get("sourceid")})
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/changesource"),
+            topic=self._out_topic(
+                "/remoteapp/tv/ui_service/%s/actions/changesource"),
             payload=payload,
         )
 
-    def _check_state(self):
+    async def _check_state(self):
         _LOGGER.debug("_check_state: %s", self._state)
         if self._state == STATE_ON:
             _LOGGER.debug("_check_state skip")
             return
 
         _LOGGER.debug("_check_state publish")
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/gettvstate"),
+            topic=self._out_topic(
+                "/remoteapp/tv/ui_service/%s/actions/gettvstate"),
             payload="0",
         )
 
@@ -376,16 +380,18 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
 
     async def _message_received_sourcelist(self, msg):
         """Run when new MQTT message has been received."""
-        self._check_state()
+        await self._check_state()
         payload = json.loads(msg.payload)
         self._source_list = {s.get("sourcename"): s for s in payload}
         self._source_list["App"] = {}
-        _LOGGER.debug("message_received_sourcelist R(%s):\n%s" % (msg.retain, payload))
+        _LOGGER.debug("message_received_sourcelist R(%s):\n%s" %
+                      (msg.retain, payload))
 
     async def _message_received_volume(self, msg):
         """Run when new MQTT message has been received."""
-        self._check_state()
-        _LOGGER.debug("message_received_volume R(%s)\n%s" % (msg.retain, msg.payload))
+        await self._check_state()
+        _LOGGER.debug("message_received_volume R(%s)\n%s" %
+                      (msg.retain, msg.payload))
         payload = json.loads(msg.payload)
         if payload.get("volume_type") == 0:
             self._volume = payload.get("volume_value")
@@ -404,16 +410,17 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         _LOGGER.debug("message_received_state %s" % statetype)
 
         if self._state == STATE_OFF:
-            mqtt.async_publish(
+            await mqtt.async_publish(
                 hass=self._hass,
                 topic=self._out_topic(
                     "/remoteapp/tv/platform_service/%s/actions/getvolume"
                 ),
                 payload="",
             )
-            mqtt.async_publish(
+            await mqtt.async_publish(
                 hass=self._hass,
-                topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/sourcelist"),
+                topic=self._out_topic(
+                    "/remoteapp/tv/ui_service/%s/actions/sourcelist"),
                 payload="",
             )
 
@@ -481,7 +488,8 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         try:
             async for msg in stream_get:
                 payload = json.loads(msg[0].payload)
-                self._channel_infos = {item.get("list_para"): item for item in payload}
+                self._channel_infos = {
+                    item.get("list_para"): item for item in payload}
                 for key, item in self._channel_infos.items():
                     node.children.append(
                         BrowseMedia(
@@ -612,7 +620,7 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
 
         if media_type == MEDIA_TYPE_CHANNEL:
             channel = json.dumps({"channel_param": media_id})
-            mqtt.async_publish(
+            await mqtt.async_publish(
                 hass=self._hass,
                 topic=self._out_topic(
                     "/remoteapp/tv/ui_service/%s/actions/changechannel"
@@ -622,10 +630,12 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         elif media_type == MEDIA_CLASS_APP:
             app = self._app_list.get(media_id)
             payload = json.dumps(
-                {"appId": media_id, "name": app.get("name"), "url": app.get("url")}
+                {"appId": media_id, "name": app.get(
+                    "name"), "url": app.get("url")}
             )
-            mqtt.async_publish(
+            await mqtt.async_publish(
                 hass=self._hass,
-                topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/launchapp"),
+                topic=self._out_topic(
+                    "/remoteapp/tv/ui_service/%s/actions/launchapp"),
                 payload=payload,
             )

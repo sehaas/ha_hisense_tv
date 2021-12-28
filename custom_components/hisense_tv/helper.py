@@ -21,7 +21,7 @@ async def mqtt_pub_sub(hass, pub, sub, payload=""):
             yield await asyncio.wait_for(queue.get(), timeout=10)
 
     unsubscribe = await mqtt.async_subscribe(hass=hass, topic=sub, msg_callback=put)
-    mqtt.async_publish(hass=hass, topic=pub, payload=payload)
+    await mqtt.async_publish(hass=hass, topic=pub, payload=payload)
     return get(), unsubscribe
 
 

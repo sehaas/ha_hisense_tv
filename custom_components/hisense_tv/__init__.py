@@ -47,3 +47,4 @@ async def async_setup(hass, config):
     _LOGGER.debug("async_setup")
     hass.data.setdefault(DOMAIN, {})
     return True
+

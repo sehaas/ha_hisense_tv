@@ -1,3 +1,4 @@
+"""Hisense TV switch entity"""
 import logging
 
 import wakeonlan
@@ -13,7 +14,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    _LOGGER.debug("async_setup_entry config: %s" % config_entry.data)
+    """Start HisenseTV switch setup process."""
+    _LOGGER.debug("async_setup_entry config: %s", config_entry.data)
 
     name = config_entry.data[CONF_NAME]
     mac = config_entry.data[CONF_MAC]
@@ -30,6 +32,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 
 class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
+    """Hisense TV switch entity."""
+
     def __init__(self, hass, name, mqtt_in, mqtt_out, mac, uid):
         HisenseTvBase.__init__(
             self=self,
@@ -48,7 +52,7 @@ class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        mqtt.async_publish(
+        await mqtt.async_publish(
             hass=self._hass,
             topic=self._out_topic("/remoteapp/tv/remote_service/%s/actions/sendkey"),
             payload="KEY_POWER",
@@ -129,10 +133,11 @@ class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
         self.async_write_ha_state()
 
     async def _message_received_state(self, msg):
-        if msg.retain == True:
+        if msg.retain is True:
             _LOGGER.debug("SWITCH message_received_state - skip retained message")
             return
 
         _LOGGER.debug("SWITCH message_received_state - turn on")
         self._is_on = True
         self.async_write_ha_state()
+

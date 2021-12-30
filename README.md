@@ -1,6 +1,7 @@
 # Hisense TV Integration for Home Assistant
 
 Integration an Hisense TV as media player into Home Assistant. The communication is handled via the integrated MQTT broker and wake-on-LAN.
+Requires Home Assistant >= `2021.12.x`.
 
 ## Current features:
 * Turn on / off

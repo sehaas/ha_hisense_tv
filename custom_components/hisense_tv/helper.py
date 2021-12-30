@@ -1,3 +1,4 @@
+"""Hisene TV integration helper methods."""
 import asyncio
 import logging
 
@@ -10,6 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def mqtt_pub_sub(hass, pub, sub, payload=""):
+    """Wrapper for publishing MQTT topics and receive replies on a subscibed topic."""
     loop = asyncio.get_event_loop()
     queue = asyncio.Queue()
 
@@ -26,6 +28,8 @@ async def mqtt_pub_sub(hass, pub, sub, payload=""):
 
 
 class HisenseTvBase(object):
+    """Hisense TV base entity."""
+
     def __init__(
         self, hass, name: str, mqtt_in: str, mqtt_out: str, mac: str, uid: str
     ):
@@ -53,7 +57,7 @@ class HisenseTvBase(object):
             out_topic = self._mqtt_out + topic % self._client
         except:
             out_topic = self._mqtt_out + topic % self._client
-        _LOGGER.debug("_out_topic: %s" % out_topic)
+        _LOGGER.debug("_out_topic: %s", out_topic)
         return out_topic
 
     def _in_topic(self, topic=""):
@@ -61,5 +65,6 @@ class HisenseTvBase(object):
             in_topic = self._mqtt_in + topic % self._client
         except:
             in_topic = self._mqtt_in + topic
-        _LOGGER.debug("_in_topic: %s" % in_topic)
+        _LOGGER.debug("_in_topic: %s", in_topic)
         return in_topic
+

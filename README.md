@@ -14,6 +14,7 @@ Requires Home Assistant >= `2021.12.x`.
   * LNB selector
   * Channel selector
   * Apps
+* Read picture setting
 
 TBD:
 * Expose ON/OFF as switch

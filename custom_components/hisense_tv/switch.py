@@ -140,4 +140,3 @@ class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
         _LOGGER.debug("SWITCH message_received_state - turn on")
         self._is_on = True
         self.async_write_ha_state()
-

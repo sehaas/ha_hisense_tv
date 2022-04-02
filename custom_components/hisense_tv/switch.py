@@ -5,7 +5,7 @@ import wakeonlan
 
 from homeassistant.components import mqtt
 from homeassistant.components.switch import DEVICE_CLASS_SWITCH, SwitchEntity
-from homeassistant.const import CONF_MAC, CONF_NAME
+from homeassistant.const import CONF_IP_ADDRESS, CONF_MAC, CONF_NAME
 
 from .const import CONF_MQTT_IN, CONF_MQTT_OUT, DEFAULT_NAME, DOMAIN
 from .helper import HisenseTvBase
@@ -19,6 +19,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     name = config_entry.data[CONF_NAME]
     mac = config_entry.data[CONF_MAC]
+    ip_address = config_entry.data.get(CONF_IP_ADDRESS, wakeonlan.BROADCAST_IP)
     mqtt_in = config_entry.data[CONF_MQTT_IN]
     mqtt_out = config_entry.data[CONF_MQTT_OUT]
     uid = config_entry.unique_id
@@ -26,7 +27,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         uid = config_entry.entry_id
 
     entity = HisenseTvSwitch(
-        hass=hass, name=name, mqtt_in=mqtt_in, mqtt_out=mqtt_out, mac=mac, uid=uid
+        hass=hass,
+        name=name,
+        mqtt_in=mqtt_in,
+        mqtt_out=mqtt_out,
+        mac=mac,
+        uid=uid,
+        ip_address=ip_address,
     )
     async_add_entities([entity])
 
@@ -34,7 +41,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
     """Hisense TV switch entity."""
 
-    def __init__(self, hass, name, mqtt_in, mqtt_out, mac, uid):
+    def __init__(self, hass, name, mqtt_in, mqtt_out, mac, uid, ip_address):
         HisenseTvBase.__init__(
             self=self,
             hass=hass,
@@ -43,12 +50,13 @@ class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
             mqtt_out=mqtt_out,
             mac=mac,
             uid=uid,
+            ip_address=ip_address,
         )
         self._is_on = False
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        wakeonlan.send_magic_packet(self._mac)
+        wakeonlan.send_magic_packet(self._mac, ip_address=self._ip_address)
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""

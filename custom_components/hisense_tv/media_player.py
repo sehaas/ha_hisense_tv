@@ -32,7 +32,13 @@ from homeassistant.components.media_player.const import (
     SUPPORT_VOLUME_STEP,
 )
 from homeassistant.config_entries import SOURCE_IMPORT
-from homeassistant.const import CONF_MAC, CONF_NAME, STATE_OFF, STATE_ON
+from homeassistant.const import (
+    CONF_IP_ADDRESS,
+    CONF_MAC,
+    CONF_NAME,
+    STATE_OFF,
+    STATE_ON,
+)
 from homeassistant.helpers import config_validation as cv
 
 from .const import (
@@ -52,6 +58,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_MAC): cv.string,
         vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+        vol.Optional(CONF_IP_ADDRESS): cv.string,
         vol.Required(CONF_MQTT_IN): cv.string,
         vol.Required(CONF_MQTT_OUT): cv.string,
     }
@@ -79,6 +86,7 @@ async def async_setup_platform(hass, config, async_add_devices, discovery_info=N
     entry_data = {
         CONF_NAME: config[CONF_NAME],
         CONF_MAC: config[CONF_MAC],
+        CONF_IP_ADDRESS: config.get(CONF_IP_ADDRESS, wakeonlan.BROADCAST_IP),
         CONF_MQTT_IN: config[CONF_MQTT_IN],
         CONF_MQTT_OUT: config[CONF_MQTT_OUT],
     }
@@ -96,6 +104,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     name = config_entry.data[CONF_NAME]
     mac = config_entry.data[CONF_MAC]
+    ip_address = config_entry.data.get(CONF_IP_ADDRESS, wakeonlan.BROADCAST_IP)
     mqtt_in = config_entry.data[CONF_MQTT_IN]
     mqtt_out = config_entry.data[CONF_MQTT_OUT]
     uid = config_entry.unique_id
@@ -103,7 +112,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         uid = config_entry.entry_id
 
     entity = HisenseTvEntity(
-        hass=hass, name=name, mqtt_in=mqtt_in, mqtt_out=mqtt_out, mac=mac, uid=uid
+        hass=hass,
+        name=name,
+        mqtt_in=mqtt_in,
+        mqtt_out=mqtt_out,
+        mac=mac,
+        uid=uid,
+        ip_address=ip_address,
     )
     async_add_entities([entity])
 
@@ -112,7 +127,14 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
     """HisenseTV Media Player entity."""
 
     def __init__(
-        self, hass, name: str, mqtt_in: str, mqtt_out: str, mac: str, uid: str
+        self,
+        hass,
+        name: str,
+        mqtt_in: str,
+        mqtt_out: str,
+        mac: str,
+        uid: str,
+        ip_address: str,
     ):
         HisenseTvBase.__init__(
             self=self,
@@ -122,6 +144,7 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
             mqtt_out=mqtt_out,
             mac=mac,
             uid=uid,
+            ip_address=ip_address,
         )
 
         self._muted = False
@@ -199,8 +222,8 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
 
     async def async_turn_on(self, **kwargs):
         """Turn the media player on."""
-        _LOGGER.debug("turn_on")
-        wakeonlan.send_magic_packet(self._mac)
+        _LOGGER.debug("turn_on %s (%s)", self._mac, self._ip_address)
+        wakeonlan.send_magic_packet(self._mac, ip_address=self._ip_address)
 
     async def async_turn_off(self, **kwargs):
         """Turn off media player."""

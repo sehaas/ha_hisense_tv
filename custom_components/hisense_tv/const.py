@@ -1,3 +1,5 @@
+"""Constants for the Hisense TV integration."""
+
 ATTR_CODE = "auth_code"
 CONF_MQTT_IN = "mqtt_in"
 CONF_MQTT_OUT = "mqtt_out"

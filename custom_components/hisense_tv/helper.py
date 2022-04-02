@@ -31,7 +31,14 @@ class HisenseTvBase(object):
     """Hisense TV base entity."""
 
     def __init__(
-        self, hass, name: str, mqtt_in: str, mqtt_out: str, mac: str, uid: str
+        self,
+        hass,
+        name: str,
+        mqtt_in: str,
+        mqtt_out: str,
+        mac: str,
+        uid: str,
+        ip_address: str,
     ):
         self._client = DEFAULT_CLIENT_ID
         self._hass = hass
@@ -39,6 +46,7 @@ class HisenseTvBase(object):
         self._mqtt_in = mqtt_in or ""
         self._mqtt_out = mqtt_out or ""
         self._mac = mac
+        self._ip_address = ip_address
         self._unique_id = uid
         self._icon = (
             "mdi:television-clean"
@@ -67,4 +75,3 @@ class HisenseTvBase(object):
             in_topic = self._mqtt_in + topic
         _LOGGER.debug("_in_topic: %s", in_topic)
         return in_topic
-

@@ -6,6 +6,7 @@
                 "data": {
                     "name": "[%key:common::config_flow::data::name%]",
                     "mac": "[%key:common::config_flow::data::mac%]",
+                    "ip_address": "[%key:common::config_flow::data::ip_address%]",
                     "mqtt_in": "[%key:common::config_flow::data::mqtt_in%]",
                     "mqtt_out": "[%key:common::config_flow::data::mqtt_out%]"
                 }

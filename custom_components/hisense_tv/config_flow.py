@@ -7,7 +7,7 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.components import mqtt
-from homeassistant.const import CONF_MAC, CONF_NAME, CONF_PIN
+from homeassistant.const import CONF_IP_ADDRESS, CONF_MAC, CONF_NAME, CONF_PIN
 from homeassistant.data_entry_flow import FlowResult
 
 from .const import (
@@ -74,7 +74,7 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._unsubscribe_sourcelist()
             self._unsubscribe_sourcelist = None
 
-    async def async_step_user(self, user_input) -> FlowResult:
+    async def async_step_user(self, user_input=None) -> FlowResult:
         if self.task_auth is True:
             return self.async_show_progress_done(next_step_id="finish")
 
@@ -90,6 +90,7 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     {
                         vol.Required(CONF_NAME, default=DEFAULT_NAME): str,
                         vol.Required(CONF_MAC): str,
+                        vol.Optional(CONF_IP_ADDRESS): str,
                         vol.Optional(CONF_MQTT_IN, default=DEFAULT_MQTT_PREFIX): str,
                         vol.Optional(CONF_MQTT_OUT, default=DEFAULT_MQTT_PREFIX): str,
                     }
@@ -100,6 +101,7 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.task_mqtt = {
             CONF_MAC: user_input.get(CONF_MAC),
             CONF_NAME: user_input.get(CONF_NAME),
+            CONF_IP_ADDRESS: user_input.get(CONF_IP_ADDRESS),
             CONF_MQTT_IN: user_input.get(CONF_MQTT_IN),
             CONF_MQTT_OUT: user_input.get(CONF_MQTT_OUT),
         }
@@ -187,10 +189,11 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_finish(self, user_input=None):
         """Finish config flow."""
         _LOGGER.debug("async_step_finish")
-        return self.async_create_entry(title=self._name, data=self.task_mqtt)
+        return self.async_create_entry(
+            title=self.task_mqtt[CONF_NAME], data=self.task_mqtt
+        )
 
     async def async_step_import(self, data):
         """Handle import from YAML."""
         _LOGGER.debug("async_step_import")
         return self.async_create_entry(title=data[CONF_NAME], data=data)
-

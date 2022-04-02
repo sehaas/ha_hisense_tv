@@ -5,7 +5,8 @@
             "user": {
                 "data": {
                     "name": "TV Name",
-                    "mac": "MAC Address",
+                    "mac": "WakeOnLAN MAC Address",
+                    "ip_address": "WakeOnLAN IP Address",
                     "mqtt_in": "MQTT subscription prefix",
                     "mqtt_out": "MQTT publish prefix"
                 }

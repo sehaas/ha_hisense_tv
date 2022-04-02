@@ -113,7 +113,7 @@ class HisenseTvSensor(SensorEntity, HisenseTvBase):
         try:
             payload = json.loads(msg.payload)
         except JSONDecodeError:
-            payload = []
+            payload = {}
         _LOGGER.debug("_message_received R(%s):\n%s", msg.retain, payload)
         self._state = {
             s.get("menu_id"): {"name": s.get("menu_name"), "value": s.get("menu_value")}

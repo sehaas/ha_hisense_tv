@@ -295,6 +295,16 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
     def source_list(self):
         """List of available input sources."""
         _LOGGER.debug("source_list")
+        if len(self._source_list) <= 1:
+            self._hass.async_create_task(
+                mqtt.async_publish(
+                    hass=self._hass,
+                    topic=self._out_topic(
+                        "/remoteapp/tv/ui_service/%s/actions/sourcelist"
+                    ),
+                    payload="0",
+                )
+            )
         return sorted(list(self._source_list))
 
     @property
@@ -340,24 +350,16 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
             return
 
         source_dic = self._source_list.get(source)
-        payload = json.dumps({"sourceid": source_dic.get("sourceid")})
+        payload = json.dumps(
+            {
+                "sourceid": source_dic.get("sourceid"),
+                "sourcename": source_dic.get("sourcename"),
+            }
+        )
         await mqtt.async_publish(
             hass=self._hass,
             topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/changesource"),
             payload=payload,
-        )
-
-    async def _check_state(self):
-        _LOGGER.debug("_check_state: %s", self._state)
-        if self._state == STATE_ON:
-            _LOGGER.debug("_check_state skip")
-            return
-
-        _LOGGER.debug("_check_state publish")
-        await mqtt.async_publish(
-            hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/getvolume"),
-            payload="0",
         )
 
     async def async_will_remove_from_hass(self):
@@ -402,14 +404,18 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
 
     async def _message_received_sourcelist(self, msg):
         """Run when new MQTT message has been received."""
-        await self._check_state()
+        if msg.retain:
+            _LOGGER.debug("_message_received_sourcelist - skip retained message")
+            return
         try:
             payload = json.loads(msg.payload)
         except JSONDecodeError:
             payload = []
-        self._source_list = {s.get("sourcename"): s for s in payload}
-        self._source_list["App"] = {}
         _LOGGER.debug("message_received_sourcelist R(%s):\n%s", msg.retain, payload)
+        if len(payload) > 0:
+            self._state = STATE_ON
+            self._source_list = {s.get("sourcename"): s for s in payload}
+            self._source_list["App"] = {}
 
     async def _message_received_volume(self, msg):
         """Run when new MQTT message has been received."""

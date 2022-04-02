@@ -333,7 +333,7 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         _LOGGER.debug("_check_state publish")
         await mqtt.async_publish(
             hass=self._hass,
-            topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/gettvstate"),
+            topic=self._out_topic("/remoteapp/tv/ui_service/%s/actions/getvolume"),
             payload="0",
         )
 
@@ -390,10 +390,13 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
 
     async def _message_received_volume(self, msg):
         """Run when new MQTT message has been received."""
-        await self._check_state()
+        if msg.retain:
+            _LOGGER.debug("_message_received_volume - skip retained message")
+            return
         _LOGGER.debug("message_received_volume R(%s)\n%s", msg.retain, msg.payload)
         try:
             payload = json.loads(msg.payload)
+            self._state = STATE_ON
         except JSONDecodeError:
             payload = {}
         if payload.get("volume_type") == 0:
@@ -404,7 +407,7 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
 
     async def _message_received_state(self, msg):
         """Run when new MQTT message has been received."""
-        if msg.retain is True:
+        if msg.retain:
             _LOGGER.debug("message_received_state - skip retained message")
             return
 

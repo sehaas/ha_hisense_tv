@@ -91,6 +91,10 @@ class HisenseTvSensor(SensorEntity, HisenseTvBase):
 
     async def _message_received_turnon(self, msg):
         _LOGGER.debug("message_received_turnon")
+        if msg.retain:
+            _LOGGER.debug("message_received_turnon - skip retained message")
+            return
+
         self._is_available = True
         self._force_trigger = True
         self.async_write_ha_state()

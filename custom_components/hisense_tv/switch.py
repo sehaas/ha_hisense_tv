@@ -133,7 +133,7 @@ class HisenseTvSwitch(SwitchEntity, HisenseTvBase):
         self.async_write_ha_state()
 
     async def _message_received_state(self, msg):
-        if msg.retain is True:
+        if msg.retain:
             _LOGGER.debug("SWITCH message_received_state - skip retained message")
             return
 

@@ -67,6 +67,7 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     def _unsubscribe(self):
+        _LOGGER.debug("_unsubscribe")
         if self._unsubscribe_auth is not None:
             self._unsubscribe_auth()
             self._unsubscribe_auth = None
@@ -76,14 +77,16 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input=None) -> FlowResult:
         if self.task_auth is True:
+            _LOGGER.debug("async_step_user - task_auth is True")
             return self.async_show_progress_done(next_step_id="finish")
 
         if self.task_auth is False:
             self.task_auth = None
+            _LOGGER.debug("async_step_user - task_auth is False")
             return self.async_show_progress_done(next_step_id="auth")
 
         if user_input is None:
-            _LOGGER.debug("async_step_user INFO None")
+            _LOGGER.debug("async_step_user - user_input is None")
             return self.async_show_form(
                 step_id="user",
                 data_schema=vol.Schema(
@@ -97,7 +100,7 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
             )
 
-        _LOGGER.debug("async_step_user NOT task_mqtt")
+        _LOGGER.debug("async_step_user - set task_mqtt")
         self.task_mqtt = {
             CONF_MAC: user_input.get(CONF_MAC),
             CONF_NAME: user_input.get(CONF_NAME),
@@ -126,12 +129,14 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
             % (self.task_mqtt.get(CONF_MQTT_IN), client_id),
             msg_callback=self._async_pin_not_needed,
         )
+        _LOGGER.debug("_check_authentication - publish gettvstate")
         mqtt.publish(
             hass=self.hass,
             topic="%s/remoteapp/tv/ui_service/%s/actions/gettvstate"
             % (self.task_mqtt.get(CONF_MQTT_OUT), client_id),
             payload="",
         )
+        _LOGGER.debug("_check_authentication - publish sourcelist")
         mqtt.publish(
             hass=self.hass,
             topic="%s/remoteapp/tv/ui_service/%s/actions/sourcelist"
@@ -141,22 +146,23 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_reauth(self, user_input=None):
         """Reauth handler."""
+        _LOGGER.debug("async_step_reauth: %s", user_input)
         self.task_auth = None
         return await self.async_step_auth(user_input=user_input)
 
     async def async_step_auth(self, user_input=None):
         """Auth handler."""
         if self.task_auth is True:
-            _LOGGER.debug("async_step_auth finish")
+            _LOGGER.debug("async_step_auth - task_auth is True -> finish")
             return self.async_show_progress_done(next_step_id="finish")
 
         if self.task_auth is False:
-            _LOGGER.debug("async_step_auth reauth")
+            _LOGGER.debug("async_step_auth - task_auth is False ->  reauth")
             return self.async_show_progress_done(next_step_id="reauth")
 
         if user_input is None:
             self.task_auth = None
-            _LOGGER.debug("async_step_auth show form")
+            _LOGGER.debug("async_step_auth - user_input is None -> show form")
             return self.async_show_form(
                 step_id="auth",
                 data_schema=vol.Schema(
@@ -166,7 +172,7 @@ class HisenseTvFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
             )
         else:
-            _LOGGER.debug("async_step_auth send authentication")
+            _LOGGER.debug("async_step_auth send authentication: %s", user_input)
             client_id = DEFAULT_CLIENT_ID
             self._unsubscribe_auth = await mqtt.async_subscribe(
                 hass=self.hass,

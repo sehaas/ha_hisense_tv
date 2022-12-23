@@ -223,7 +223,11 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
     async def async_turn_on(self, **kwargs):
         """Turn the media player on."""
         _LOGGER.debug("turn_on %s (%s)", self._mac, self._ip_address)
-        wakeonlan.send_magic_packet(self._mac, ip_address=self._ip_address)
+        if (self._ip_address):
+            wakeonlan.send_magic_packet(self._mac, ip_address=self._ip_address)
+        else:
+            wakeonlan.send_magic_packet(self._mac)
+
 
     async def async_turn_off(self, **kwargs):
         """Turn off media player."""

@@ -465,6 +465,7 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
                 payload="",
             )
 
+        self._state = STATE_ON
         if statetype == "sourceswitch":
             # sourceid:
             # sourcename:
@@ -501,8 +502,9 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
             self._channel_num = None
         elif statetype == "remote_epg":
             pass
+        elif statetype == "fake_sleep_0":
+            self._state = STATE_OFF
 
-        self._state = STATE_ON
         self.async_write_ha_state()
 
     async def _build_library_node(self):

@@ -180,7 +180,7 @@ class HisenseTvSensor(SensorEntity, HisenseTvBase):
         await mqtt.async_publish(
             hass=self._hass,
             topic=self._out_topic(
-                "/remoteapp/tv/platform_service/%s/actions/picturesetting"
+                "/remoteapp/tv/ui_service/%s/actions/gettvstate"
             ),
             payload='{"action": "get_menu_info"}',
             retain=False,

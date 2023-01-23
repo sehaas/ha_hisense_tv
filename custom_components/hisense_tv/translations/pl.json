@@ -1,0 +1,21 @@
+{
+    "title": "Hisense TV",
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "name": "Nazwa telewizora",
+                    "mac": "Adres MAC WakeOnLAN",
+                    "ip_address": "Adres IP WakeOnLAN",
+                    "mqtt_in": "Prefiks subskrypcji MQTT",
+                    "mqtt_out": "Prefiks publikowania MQTT"
+                }
+            },
+            "authentication": {
+                "data": {
+                    "pin": "Kod PIN"
+                }
+            }
+        }
+    }
+}

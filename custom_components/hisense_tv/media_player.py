@@ -161,7 +161,7 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
 
     @property
     def should_poll(self):
-        """No polling needed."""
+        """Poll for non media_player updates."""
         return False
 
     @property
@@ -219,6 +219,28 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         """Return the state of the device."""
         _LOGGER.debug("state %s", self._state)
         return self._state
+
+    async def async_update(self):
+        """Get the latest data and updates the states."""
+        if (
+            not self._force_trigger
+            and dt_util.utcnow() - self._last_trigger < timedelta(minutes=1)
+        ):
+            _LOGGER.debug("Skip update")
+            return
+
+        _LOGGER.debug("Update. force=%s", self._force_trigger)
+        self._force_trigger = False
+        self._last_trigger = dt_util.utcnow()
+
+        await mqtt.async_publish(
+            hass=self._hass,
+            topic=self._out_topic(
+                "/remoteapp/tv/ui_service/AutoHTPC/actions/gettvstate"
+            ),
+            payload='',
+            retain=False,
+        )
 
     async def async_turn_on(self, **kwargs):
         """Turn the media player on."""

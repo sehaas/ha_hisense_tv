@@ -162,7 +162,7 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
     @property
     def should_poll(self):
         """Poll for non media_player updates."""
-        return False
+        return True
 
     @property
     def media_content_type(self):

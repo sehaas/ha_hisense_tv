@@ -158,6 +158,8 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         self._channel_num = None
         self._channel_infos = {}
         self._app_list = {}
+        self._last_trigger = dt_util.utcnow()
+        self._force_trigger = False
 
     @property
     def should_poll(self):

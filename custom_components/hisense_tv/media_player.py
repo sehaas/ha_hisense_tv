@@ -8,6 +8,7 @@ import voluptuous as vol
 import wakeonlan
 
 from homeassistant.components import mqtt
+from homeassistant.util import dt as dt_util
 from homeassistant.components.media_player import (
     DEVICE_CLASS_TV,
     PLATFORM_SCHEMA,

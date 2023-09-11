@@ -1,4 +1,5 @@
 """Hisense TV media player entity."""
+from datetime import timedelta
 import asyncio
 import json
 from json.decoder import JSONDecodeError

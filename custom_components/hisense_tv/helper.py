@@ -5,7 +5,7 @@ import logging
 from homeassistant.components import mqtt
 from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 
-from .const import DEFAULT_CLIENT_ID
+from .const import DEFAULT_CLIENT_ID, DEFAULT_NAME, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ class HisenseTvBase(object):
         try:
             out_topic = self._mqtt_out + topic % self._client
         except:
-            out_topic = self._mqtt_out + topic % self._client
+            out_topic = self._mqtt_out + topic
         _LOGGER.debug("_out_topic: %s", out_topic)
         return out_topic
 

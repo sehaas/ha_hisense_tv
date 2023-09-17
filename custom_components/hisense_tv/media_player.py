@@ -1,4 +1,5 @@
 """Hisense TV media player entity."""
+from datetime import timedelta
 import asyncio
 import json
 from json.decoder import JSONDecodeError
@@ -8,6 +9,7 @@ import voluptuous as vol
 import wakeonlan
 
 from homeassistant.components import mqtt
+from homeassistant.util import dt as dt_util
 from homeassistant.components.media_player import (
     DEVICE_CLASS_TV,
     PLATFORM_SCHEMA,
@@ -158,11 +160,13 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         self._channel_num = None
         self._channel_infos = {}
         self._app_list = {}
+        self._last_trigger = dt_util.utcnow()
+        self._force_trigger = False
 
     @property
     def should_poll(self):
-        """No polling needed."""
-        return False
+        """Poll for non media_player updates."""
+        return True
 
     @property
     def media_content_type(self):
@@ -219,6 +223,28 @@ class HisenseTvEntity(MediaPlayerEntity, HisenseTvBase):
         """Return the state of the device."""
         _LOGGER.debug("state %s", self._state)
         return self._state
+
+    async def async_update(self):
+        """Get the latest data and updates the states."""
+        if (
+            not self._force_trigger
+            and dt_util.utcnow() - self._last_trigger < timedelta(minutes=1)
+        ):
+            _LOGGER.debug("Skip update")
+            return
+
+        _LOGGER.debug("Update. force=%s", self._force_trigger)
+        self._force_trigger = False
+        self._last_trigger = dt_util.utcnow()
+
+        await mqtt.async_publish(
+            hass=self._hass,
+            topic=self._out_topic(
+                "/remoteapp/tv/ui_service/%s/actions/gettvstate"
+            ),
+            payload="",
+            retain=False,
+        )
 
     async def async_turn_on(self, **kwargs):
         """Turn the media player on."""
